@@ -2,27 +2,56 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { McpAgent } from "agents/mcp";
 import { z } from "zod";
 
-// Define our MCP agent with tools
+// Mohammed Remote MCP Server
 export class MyMCP extends McpAgent {
 	server = new McpServer({
-		name: "Authless Calculator",
+		name: "Mohammed MCP Server",
 		version: "1.0.0",
 	});
 
 	async init() {
-		// Simple addition tool
+		// Tool 1: Test connection
 		this.server.registerTool(
-			"add",
-			{ inputSchema: { a: z.number(), b: z.number() } },
-			async ({ a, b }) => ({
-				content: [{ type: "text", text: String(a + b) }],
+			"test_connection",
+			{
+				description: "Test if Mohammed MCP Server is working",
+				inputSchema: {},
+			},
+			async () => ({
+				content: [
+					{
+						type: "text",
+						text: "Mohammed MCP Server is working ✅",
+					},
+				],
 			}),
 		);
 
-		// Calculator tool with multiple operations
+		// Tool 2: Simple addition
+		this.server.registerTool(
+			"add",
+			{
+				description: "Add two numbers",
+				inputSchema: {
+					a: z.number(),
+					b: z.number(),
+				},
+			},
+			async ({ a, b }) => ({
+				content: [
+					{
+						type: "text",
+						text: String(a + b),
+					},
+				],
+			}),
+		);
+
+		// Tool 3: Calculator with multiple operations
 		this.server.registerTool(
 			"calculate",
 			{
+				description: "Calculate add, subtract, multiply, or divide",
 				inputSchema: {
 					operation: z.enum(["add", "subtract", "multiply", "divide"]),
 					a: z.number(),
@@ -31,18 +60,22 @@ export class MyMCP extends McpAgent {
 			},
 			async ({ operation, a, b }) => {
 				let result: number;
+
 				switch (operation) {
 					case "add":
 						result = a + b;
 						break;
+
 					case "subtract":
 						result = a - b;
 						break;
+
 					case "multiply":
 						result = a * b;
 						break;
+
 					case "divide":
-						if (b === 0)
+						if (b === 0) {
 							return {
 								content: [
 									{
@@ -51,10 +84,29 @@ export class MyMCP extends McpAgent {
 									},
 								],
 							};
+						}
 						result = a / b;
 						break;
+
+					default:
+						return {
+							content: [
+								{
+									type: "text",
+									text: "Error: Unknown operation",
+								},
+							],
+						};
 				}
-				return { content: [{ type: "text", text: String(result) }] };
+
+				return {
+					content: [
+						{
+							type: "text",
+							text: String(result),
+						},
+					],
+				};
 			},
 		);
 	}
@@ -68,6 +120,8 @@ export default {
 			return MyMCP.serve("/mcp").fetch(request, env, ctx);
 		}
 
-		return new Response("Not found", { status: 404 });
+		return new Response("Mohammed MCP Server is running. Use /mcp endpoint.", {
+			status: 200,
+		});
 	},
 };
