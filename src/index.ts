@@ -25,7 +25,12 @@ async function sendWhatsApp(env: Env, phone: string, message: string) {
 		body: JSON.stringify({ chatId, message }),
 	});
 
-	return { ok: res.ok, status: res.status, data: await res.text(), chatId };
+	return {
+		ok: res.ok,
+		status: res.status,
+		data: await res.text(),
+		chatId,
+	};
 }
 
 async function generateAIReply(env: Env, message: string, name = "") {
@@ -34,26 +39,31 @@ async function generateAIReply(env: Env, message: string, name = "") {
 ترد مثل ChatGPT لكن بأسلوب مبيعات محترف ومختصر.
 
 خدمات محمد:
-- تصميم مواقع ومتاجر إلكترونية
-- تصميم تطبيقات
-- تصاميم إعلانية
-- موشن جرافيك
-- تسويق رقمي
-- أتمتة واتساب وAI
+- تصميم مواقع ومتاجر إلكترونية.
+- تصميم تطبيقات.
+- تصاميم إعلانية.
+- موشن جرافيك.
+- تسويق رقمي.
+- أتمتة واتساب وAI.
 
 الأسعار:
-- الموقع يبدأ من 500 ريال
-- التصاميم من 200 إلى 400 ريال
-- التطبيق والموشن حسب التفاصيل
+- الموقع يبدأ من 500 ريال.
+- التصاميم من 200 إلى 400 ريال.
+- التطبيق والموشن حسب التفاصيل.
 
-الرد يجب أن يكون عربي، واضح، مقنع، وفي آخره سؤال واحد فقط.
+طريقة الرد:
+- الرد بالعربية فقط.
+- كن واضحًا ومقنعًا.
+- لا تطوّل.
+- لا تخترع سعرًا نهائيًا.
+- اسأل سؤالًا واحدًا فقط في نهاية الرد.
 `;
 
 	const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
-			"Authorization": `Bearer ${env.OPENROUTER_API_KEY}`,
+			Authorization: `Bearer ${env.OPENROUTER_API_KEY}`,
 			"HTTP-Referer": "https://remote-mcp-server-authless.moshmmedmoshmmed88.workers.dev",
 			"X-Title": "Mohammed WhatsApp AI Agent",
 		},
@@ -61,7 +71,10 @@ async function generateAIReply(env: Env, message: string, name = "") {
 			model: OPENROUTER_MODEL,
 			messages: [
 				{ role: "system", content: prompt },
-				{ role: "user", content: `اسم العميل: ${name || "غير معروف"}\nرسالة العميل: ${message}` },
+				{
+					role: "user",
+					content: `اسم العميل: ${name || "غير معروف"}\nرسالة العميل: ${message}`,
+				},
 			],
 		}),
 	});
@@ -85,7 +98,9 @@ export class MyMCP extends McpAgent {
 		this.server.registerTool(
 			"test_connection",
 			{ description: "Test server", inputSchema: {} },
-			async () => ({ content: [{ type: "text", text: "MCP يعمل ✅" }] }),
+			async () => ({
+				content: [{ type: "text", text: "MCP يعمل ✅" }],
+			}),
 		);
 
 		this.server.registerTool(
@@ -116,11 +131,16 @@ export class MyMCP extends McpAgent {
 			async ({ phone, message }) => {
 				const env = this.env as Env;
 				const result = await sendWhatsApp(env, phone, message);
+
 				return {
-					content: [{
-						type: "text",
-						text: result.ok ? `تم الإرسال إلى ${result.chatId}` : `فشل: ${result.status} ${result.data}`,
-					}],
+					content: [
+						{
+							type: "text",
+							text: result.ok
+								? `تم الإرسال إلى ${result.chatId}`
+								: `فشل: ${result.status} ${result.data}`,
+						},
+					],
 				};
 			},
 		);
@@ -136,14 +156,13 @@ export default {
 		}
 
 		if (url.pathname === "/webhook/greenapi") {
-	if (request.method !== "POST") {
-		return new Response("GREEN-API webhook is ready. Send POST only.", {
-			status: 200,
-		});
-	}
+			if (request.method !== "POST") {
+				return new Response("GREEN-API webhook is ready. Send POST only.", {
+					status: 200,
+				});
+			}
 
-	const body = await request.json<any>();
-			
+			const body = await request.json<any>();
 
 			const sender = body?.senderData?.sender || "";
 			const senderName = body?.senderData?.senderName || "";
@@ -167,9 +186,18 @@ export default {
 				await sendWhatsApp(env, phone, reply);
 			}
 
-			return Response.json({ ok: true, received: true });
+			return Response.json({
+				ok: true,
+				received: true,
+				sender,
+				senderName,
+				typeMessage,
+				textMessage,
+			});
 		}
 
-		return new Response("Mohammed WhatsApp AI Agent is running ✅", { status: 200 });
+		return new Response("Mohammed WhatsApp AI Agent is running ✅", {
+			status: 200,
+		});
 	},
 };
