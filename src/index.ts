@@ -136,7 +136,14 @@ export default {
 		}
 
 		if (url.pathname === "/webhook/greenapi") {
-			const body = await request.json<any>();
+	if (request.method !== "POST") {
+		return new Response("GREEN-API webhook is ready. Send POST only.", {
+			status: 200,
+		});
+	}
+
+	const body = await request.json<any>();
+			
 
 			const sender = body?.senderData?.sender || "";
 			const senderName = body?.senderData?.senderName || "";
