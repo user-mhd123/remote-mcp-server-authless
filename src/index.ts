@@ -4,9 +4,9 @@ import { z } from "zod";
 
 const GREEN_API_URL = "https://7107.api.greenapi.com";
 const GREEN_API_ID_INSTANCE = "7107634499";
-const GREEN_API_TOKEN_INSTANCE = "PASTE_GREEN_API_TOKEN_HERE";
+const GREEN_API_TOKEN_INSTANCE = "b1652ca0593b4b10b3dbd89c7b5922c51818ebe7d83442aaad";
 
-const OPENROUTER_API_KEY = "PASTE_OPENROUTER_KEY_HERE";
+const OPENROUTER_API_KEY = "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";
 const OPENROUTER_MODEL = "openrouter/free";
 
 function cleanPhone(phone: string) {
