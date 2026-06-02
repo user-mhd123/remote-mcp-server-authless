@@ -2,32 +2,76 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { McpAgent } from "agents/mcp";
 import { z } from "zod";
 
-// Mohammed Remote MCP Server
+const GREEN_API_URL = "https://7107.api.greenapi.com";
+const GREEN_API_ID_INSTANCE = "7107634499";
+const GREEN_API_TOKEN_INSTANCE = "b1652ca0593b4b10b3dbd89c7b5922c51818ebe7d83442aaad";
+
 export class MyMCP extends McpAgent {
 	server = new McpServer({
-		name: "Mohammed MCP Server",
+		name: "Mohammed WhatsApp MCP Server",
 		version: "1.0.0",
 	});
 
 	async init() {
-		// Tool 1: Test connection
 		this.server.registerTool(
 			"test_connection",
 			{
-				description: "Test if Mohammed MCP Server is working",
+				description: "Test server connection",
 				inputSchema: {},
 			},
 			async () => ({
-				content: [
-					{
-						type: "text",
-						text: "Mohammed MCP Server is working ✅",
-					},
-				],
+				content: [{ type: "text", text: "Mohammed MCP Server is working ✅" }],
 			}),
 		);
 
-		// Tool 2: Simple addition
+		this.server.registerTool(
+			"send_whatsapp_message",
+			{
+				description: "Send WhatsApp message using GREEN-API",
+				inputSchema: {
+					phone: z.string(),
+					message: z.string(),
+				},
+			},
+			async ({ phone, message }) => {
+				const cleanPhone = phone.replace(/[^\d]/g, "");
+				const chatId = `${cleanPhone}@c.us`;
+
+				const url = `${GREEN_API_URL}/waInstance${GREEN_API_ID_INSTANCE}/sendMessage/${GREEN_API_TOKEN_INSTANCE}`;
+
+				const response = await fetch(url, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						chatId,
+						message,
+					}),
+				});
+
+				const data = await response.text();
+
+				if (!response.ok) {
+					return {
+						content: [
+							{
+								type: "text",
+								text: `فشل الإرسال. Status: ${response.status}. Response: ${data}`,
+							},
+						],
+					};
+				}
+
+				return {
+					content: [
+						{
+							type: "text",
+							text: `تم إرسال الرسالة بنجاح إلى ${chatId}. Response: ${data}`,
+						},
+					],
+				};
+			},
+		);
+
 		this.server.registerTool(
 			"add",
 			{
@@ -38,86 +82,56 @@ export class MyMCP extends McpAgent {
 				},
 			},
 			async ({ a, b }) => ({
-				content: [
-					{
-						type: "text",
-						text: String(a + b),
-					},
-				],
+				content: [{ type: "text", text: String(a + b) }],
 			}),
-		);
-
-		// Tool 3: Calculator with multiple operations
-		this.server.registerTool(
-			"calculate",
-			{
-				description: "Calculate add, subtract, multiply, or divide",
-				inputSchema: {
-					operation: z.enum(["add", "subtract", "multiply", "divide"]),
-					a: z.number(),
-					b: z.number(),
-				},
-			},
-			async ({ operation, a, b }) => {
-				let result: number;
-
-				switch (operation) {
-					case "add":
-						result = a + b;
-						break;
-
-					case "subtract":
-						result = a - b;
-						break;
-
-					case "multiply":
-						result = a * b;
-						break;
-
-					case "divide":
-						if (b === 0) {
-							return {
-								content: [
-									{
-										type: "text",
-										text: "Error: Cannot divide by zero",
-									},
-								],
-							};
-						}
-						result = a / b;
-						break;
-
-					default:
-						return {
-							content: [
-								{
-									type: "text",
-									text: "Error: Unknown operation",
-								},
-							],
-						};
-				}
-
-				return {
-					content: [
-						{
-							type: "text",
-							text: String(result),
-						},
-					],
-				};
-			},
 		);
 	}
 }
 
 export default {
-	fetch(request: Request, env: Env, ctx: ExecutionContext) {
+	async fetch(request: Request, env: Env, ctx: ExecutionContext) {
 		const url = new URL(request.url);
 
 		if (url.pathname === "/mcp") {
 			return MyMCP.serve("/mcp").fetch(request, env, ctx);
+		}
+
+		if (url.pathname === "/webhook/greenapi") {
+			if (request.method !== "POST") {
+				return new Response("Method not allowed", { status: 405 });
+			}
+
+			const body = await request.json<any>();
+
+			const sender = body?.senderData?.sender || "";
+			const senderName = body?.senderData?.senderName || "";
+			const typeMessage = body?.messageData?.typeMessage || "";
+
+			let textMessage = "";
+
+			if (typeMessage === "textMessage") {
+				textMessage = body?.messageData?.textMessageData?.textMessage || "";
+			}
+
+			if (typeMessage === "extendedTextMessage") {
+				textMessage = body?.messageData?.extendedTextMessageData?.text || "";
+			}
+
+			console.log("GREEN-API WEBHOOK:", {
+				sender,
+				senderName,
+				typeMessage,
+				textMessage,
+			});
+
+			return Response.json({
+				ok: true,
+				received: true,
+				sender,
+				senderName,
+				typeMessage,
+				textMessage,
+			});
 		}
 
 		return new Response("Mohammed MCP Server is running. Use /mcp endpoint.", {
