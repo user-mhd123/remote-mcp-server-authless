@@ -9,7 +9,7 @@ interface Env {
 
 const GREEN_API_URL = "https://7107.api.greenapi.com";
 const GREEN_API_ID_INSTANCE = "7107634499";
-const OPENROUTER_MODEL = "meta-llama/llama-3.1-8b-instruct:free";
+const OPENROUTER_MODEL = "openrouter/free";
 
 function cleanPhone(phone: string) {
 	return phone.replace(/[^\d]/g, "");
