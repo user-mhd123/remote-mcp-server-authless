@@ -6,7 +6,7 @@ const GREEN_API_URL = "https://7107.api.greenapi.com";
 const GREEN_API_ID_INSTANCE = "7107634499";
 const GREEN_API_TOKEN_INSTANCE = "b1652ca0593b4b10b3dbd89c7b5922c51818ebe7d83442aaad";
 
-const OPENROUTER_API_KEY = "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";
+const OPENROUTER_API_KEY = "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";
 const OPENROUTER_MODEL = "openrouter/free";
 
 function cleanPhone(phone: string) {
