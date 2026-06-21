@@ -3,8 +3,8 @@ import { McpAgent } from "agents/mcp";
 import { z } from "zod";
 
 const GREEN_API_URL = "https://7107.api.greenapi.com";
-const GREEN_API_ID_INSTANCE = "7107634499";
-const GREEN_API_TOKEN_INSTANCE = "b1652ca0593b4b10b3dbd89c7b5922c51818ebe7d83442aaad";
+const GREEN_API_ID_INSTANCE = "7034499";
+const GREEN_API_TOKEN_INSTANCE = "b1652ca01818e83442aaad";
 
 function cleanPhone(phone: string) {
 	return phone.replace(/[^\d]/g, "");
